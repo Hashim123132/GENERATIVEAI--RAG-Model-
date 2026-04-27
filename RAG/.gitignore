@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+.venv/
+venv/
+
+# Environment variables (VERY IMPORTANT)
+.env
+
+# Chroma DB / vector database
+chroma_db/
+*.sqlite3
+*.db
+
+# Large local data files (PDFs, datasets)
+*.pdf
+data/
+Document_loaders/
+
+# HuggingFace / ML cache
+.cache/
+huggingface/
+transformers_cache/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Jupyter
+.ipynb_checkpoints/
+
+.env
