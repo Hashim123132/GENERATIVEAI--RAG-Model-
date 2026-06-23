@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import "./App.css";
 import ChatWindow from "./components/ChatWindow";
 import ChatInput from "./components/ChatInput";
+import FileUpload from "./components/FileUpload";
 
 type Message = { role: "user" | "assistant"; text: string };
 
@@ -29,10 +30,18 @@ function App(): JSX.Element {
     }
   }
 
+  function handleUploadComplete() {
+    setMessages((prev) => [
+      ...prev,
+      { role: "assistant", text: "Document uploaded and indexed. You can now ask questions about it." },
+    ]);
+  }
+
   return (
     <div className="app root">
       <div className="container">
         <h1 className="title">RAG Chat</h1>
+        <FileUpload onUploadComplete={handleUploadComplete} />
         <ChatWindow messages={messages} />
         <ChatInput onSend={handleSend} />
       </div>

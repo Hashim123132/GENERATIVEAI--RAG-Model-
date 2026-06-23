@@ -1,5 +1,3 @@
-import os
-
 from dotenv import load_dotenv
 from langchain_community.vectorstores import Chroma
 
@@ -10,8 +8,7 @@ from langchain_core.prompts import ChatPromptTemplate
 load_dotenv()
 
 embeddings = HuggingFaceEmbeddings(
-    model_name="sentence-transformers/all-mpnet-base-v2", 
-    huggingfacehub_api_token=os.getenv("HUGGINGFACEHUB_ACCESS_TOKEN")
+    model_name="sentence-transformers/all-mpnet-base-v2"
 )
 vectorstore = Chroma(
     persist_directory= "chroma_db",

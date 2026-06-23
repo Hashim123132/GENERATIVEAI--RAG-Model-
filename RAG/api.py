@@ -4,7 +4,11 @@ from langchain_community.vectorstores import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_mistralai import ChatMistralAI
+from langchain_community.document_loaders import PyPDFLoader
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 import mimetypes
+import tempfile
+import os
 
 load_dotenv()
 
@@ -21,6 +25,8 @@ DEMO_MODE = False
 retriever = None
 llm = None
 prompt = None
+embeddings = None
+vectorstore = None
 try:
     embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-mpnet-base-v2")
     vectorstore = Chroma(persist_directory='chroma_db', embedding_function=embeddings)
@@ -51,6 +57,44 @@ def chat():
     final_prompt = prompt.invoke({"context":context, "question": question})
     response = llm.invoke(final_prompt)
     return jsonify({'answer': getattr(response, 'content', str(response))})
+
+@app.route('/api/upload', methods=['POST'])
+def upload_pdf():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file sent'}), 400
+    file = request.files['file']
+    if file.filename == '' or not file.filename.lower().endswith('.pdf'):
+        return jsonify({'error': 'Only PDF files are accepted'}), 400
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as tmp:
+        file.save(tmp.name)
+        tmp_path = tmp.name
+
+    try:
+        loader = PyPDFLoader(tmp_path)
+        docs = loader.load()
+        splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+        chunks = splitter.split_documents(docs)
+
+        global vectorstore, retriever, DEMO_MODE, embeddings
+
+        if vectorstore is None:
+            emb = HuggingFaceEmbeddings(model_name="sentence-transformers/all-mpnet-base-v2")
+            vs = Chroma.from_documents(documents=chunks, embedding=emb, persist_directory='chroma_db')
+            vs.persist()
+            embeddings = emb
+            vectorstore = Chroma(persist_directory='chroma_db', embedding_function=embeddings)
+            retriever = vectorstore.as_retriever(search_type='mmr', search_kwargs={'k':4,'fetch_k':10,'lambda_mult':0.5})
+            DEMO_MODE = False
+        else:
+            vectorstore.add_documents(chunks)
+            vectorstore.persist()
+
+        return jsonify({'message': f'Processed {len(chunks)} chunks from {file.filename}'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    finally:
+        os.unlink(tmp_path)
 
 @app.route('/')
 def index():

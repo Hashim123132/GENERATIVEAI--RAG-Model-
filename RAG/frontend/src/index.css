@@ -30,6 +30,29 @@ body {
   border-radius: 8px;
   overflow: auto;
 }
+.file-upload {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.upload-btn {
+  display: inline-block;
+  padding: 8px 14px;
+  border-radius: 6px;
+  background: var(--accent, #60a5fa);
+  color: #032;
+  cursor: pointer;
+  font-size: 14px;
+  user-select: none;
+}
+.upload-btn:active {
+  opacity: 0.8;
+}
+.upload-msg {
+  font-size: 13px;
+  color: var(--muted, #94a3b8);
+}
 .chat-input {
   display: flex;
   gap: 8px;
